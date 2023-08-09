@@ -11,13 +11,20 @@
 <script lang="ts" setup>
 import Banner from '@/assets/banner.png';
 import { reactive, ref } from 'vue';
-import router from '@/router';
+import { showToast } from 'vant';
+import { useRoute, useRouter } from 'vue-router';
+
+const route = useRoute();
+const router = useRouter();
+const deptId = route.params.deptId;
+
+console.log(deptId);
 
 function toReg() {
-  router.push('visitor-register');
+  router.push('/visitor-register/' + deptId);
 }
 function toInfo() {
-  router.push('visitor-search');
+  router.push('/visitor-search/' + deptId);
 }
 </script>
 

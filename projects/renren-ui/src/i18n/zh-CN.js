@@ -3,7 +3,7 @@ const t = {};
 t.loading = "加载中...";
 
 t.brand = {};
-t.brand.lg = "人人权限系统";
+t.brand.lg = "智慧访客系统";
 t.brand.mini = "人人";
 
 t.add = "新增";

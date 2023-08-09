@@ -1,52 +1,105 @@
 <template>
   <div class="state-content">
     <div class="state-info">
-      <p class="title">程建</p>
-      <p class="mobile">18888888888</p>
-      <QRCodeVue3
-        :width="200"
-        :height="200"
-        value="https://www.baidu.com"
-        :qrOptions="{ typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'H' }"
-        :imageOptions="{ hideBackgroundDots: true, imageSize: 0.4, margin: 0 }"
-        :dotsOptions="{
-          type: 'square',
-          color: '#8C52FF',
-          gradient: {
-            type: 'linear',
-            rotation: 0,
-            colorStops: [
-              { offset: 0, color: '#8C52FF' },
-              { offset: 1, color: '#8C52FF' }
-            ]
-          }
-        }"
-        :backgroundOptions="{ color: '#ffffff' }"
-        :cornersSquareOptions="{ type: 'square', color: '#8C52FF' }"
-        :cornersDotOptions="{ type: 'square', color: '#8C52FF' }"
-        fileExt="png"
-        myclass="my-qur"
-        imgclass="img-qr"
-        :downloadOptions="{ name: 'vqr', extension: 'png' }"
-      />
-      <p class="time">预约时间：2023-10-10</p>
-      <p class="state">预约成功</p>
-      <p class="tips">进入学校请出示二维码</p>
+      <p class="title">{{ state.visitor.name }}</p>
+      <p class="mobile">{{ state.visitor.phone }}</p>
+      <Qr v-if="!loading" :content="state.content" :qr-color="qrColor"></Qr>
+      <p class="time">预约时间：{{ reqTimestr }}</p>
+      <p class="state">{{ qrState.msg }}</p>
+      <p class="tips">{{ qrState.tips }}</p>
     </div>
   </div>
   <div class="state-back">
     <van-button plain type="primary" @click="toHome"> 返回首页</van-button>
   </div>
 </template>
-<script setup lang="ts">
+<script setup>
 import QRCodeVue3 from 'qrcode-vue3';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { encrypt, decrypt } from '@/utils/crypto';
+import { reactive, computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import dayjs from 'dayjs';
+import http from '@/utils/request';
+import Qr from './qr.vue';
 const router = useRouter();
+const route = useRoute();
+const { id, status, name, phone, reqTime, idNo, deptId } = JSON.parse(
+  decrypt(route.query.code)
+);
+const loading = ref(false);
+const reqTimestr = dayjs(reqTime).format('YYYY-MM-DD');
+const state = reactive({
+  visitor: {
+    state: '1',
+    name,
+    phone,
+  },
+  content: encrypt(`${name}|${id}|${{ 1: 3, 3: 4, 4: 4 }[status]}`),
+});
+
+const qrColor = computed(() => {
+  return {
+    1: '#07c160',
+    3: '#1989fa',
+    4: '#666666',
+    0: '#333333',
+  }[state.visitor.state];
+});
+
+const qrState = computed(() => {
+  return {
+    1: { msg: '预约成功', tips: '进入学校请出示二维码' },
+    3: { msg: '已进校', tips: '离开学校请重新扫码' },
+    4: { msg: '离校', tips: '离校学校' },
+    0: { msg: '错误', tips: '未审核' },
+  }[state.visitor.state];
+});
+
 function toHome() {
-  router.push('/visitor');
+  router.push('/visitor/' + deptId);
 }
+const timer = setInterval(getStatus, 3000);
+
+getStatus();
+
+function getStatus() {
+  http({
+    url: 'visit/front/visitordetail/page',
+    method: 'get',
+    params: {
+      phone,
+      idno: idNo,
+      deptId: deptId,
+      reqTime: dayjs().format('YYYYMMDD'),
+    },
+  })
+    .then((res) => {
+      if (res.data.data && res.data.data.length > 0) {
+        const { status: state1 } = res.data.data[0];
+
+        if (state1 != state.visitor.state) {
+          loading.value = true;
+          state.visitor.state = state1;
+          state.content = encrypt(
+            `${name}|${id}|${{ 1: 3, 3: 4, 4: 4 }[state1]}`
+          );
+        }
+      } else {
+        showFailToast(
+          '未查询到您' + dayjs().format('YYYY-MM-DD') + '的申请记录'
+        );
+        router.push('/visitor/' + deptId);
+      }
+    })
+    .finally((_) => {
+      loading.value = false;
+    });
+}
+onBeforeUnmount((_) => {
+  clearInterval(timer);
+});
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .state-content {
   height: 100vh;
   padding: 0 var(--van-padding-md);
@@ -92,7 +145,7 @@ function toHome() {
       font-size: 20px;
     }
     &.state {
-      color: #72c748;
+      color: v-bind(qrColor);
       font-weight: 600;
       margin: 0;
       padding-top: var(--van-padding-md);

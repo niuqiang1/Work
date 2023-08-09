@@ -22,7 +22,8 @@ export const pageRoutes = [
     },
   },
   { path: "/login", component: () => import("@/views/pages/login"), name: "login", meta: { title: "登录" } },
-  { path: "/dashbord", component: () => import("@/views/pages/dashbord"), name: "dashbord", meta: { title: "看板" } },
+  { path: "/door/:deptId", component: () => import("@/views/pages/door"), name: "door", meta: { title: "大屏登录" } },
+  { path: "/dashbord/:deptId", component: () => import("@/views/pages/dashbord"), name: "dashbord", meta: { title: "看板" } },
 ];
 
 // 模块路由(基于主入口布局页面)

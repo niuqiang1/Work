@@ -8,7 +8,7 @@
 
 <script setup></script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .result-content {
   padding: 0 var(--van-padding-md);
   position: relative;

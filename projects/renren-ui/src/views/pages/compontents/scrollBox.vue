@@ -3,9 +3,9 @@
     <vue-seamless-scroll :data="list" :classOption="classOption">
       <ul class="smjl">
         <li v-for="(i, index) in list" :key="index">
-          <span>章洒</span>
-          <span class="text-green">184****0113</span>
-          <span> {{ new Date().toLocaleTimeString() }} </span>
+          <span>{{ i.name }}</span>
+          <span class="text-green">{{ i.phone | plusXing(3, 4) }}</span>
+          <span> {{ { come: i.comeTime, leave: i.leaveTime, wait: plusXing(i.idNo, 3, 4) }[type] }} </span>
         </li>
       </ul>
     </vue-seamless-scroll>
@@ -13,19 +13,28 @@
 </template>
 <script>
 import vueSeamlessScroll from "vue-seamless-scroll";
+import { plusXing } from "@/utils";
+
 export default {
   name: "widget",
   components: {
     vueSeamlessScroll,
   },
   props: {
+    type: {
+      type: String,
+      default: "come",
+    },
     list: {
       type: Array,
-      default: [],
+      default() {
+        return [];
+      },
     },
   },
   data() {
     return {
+      plusXing,
       classOption: {
         step: 0.4,
       },

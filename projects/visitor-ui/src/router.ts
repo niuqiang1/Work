@@ -5,7 +5,7 @@ const routes = [
     name: 'notFound',
     path: '/:path(.*)+',
     redirect: {
-      name: 'visitor',
+      name: '404',
     },
   },
   {
@@ -26,7 +26,7 @@ const routes = [
   },
   {
     name: 'visitor-register',
-    path: '/visitor-register',
+    path: '/visitor-register/:deptId',
     component: () => import('@/view/visitor/index.vue'),
     meta: {
       title: '访客预约',
@@ -34,7 +34,7 @@ const routes = [
   },
   {
     name: 'visitor',
-    path: '/visitor',
+    path: '/visitor/:deptId',
     component: () => import('@/view/visitor/home.vue'),
     meta: {
       title: '访客预约',
@@ -42,7 +42,7 @@ const routes = [
   },
   {
     name: 'visitor-search',
-    path: '/visitor-search',
+    path: '/visitor-search/:deptId',
     component: () => import('@/view/visitor/search.vue'),
     meta: {
       title: '访客预约',
@@ -50,7 +50,7 @@ const routes = [
   },
   {
     name: 'visiteState',
-    path: '/state',
+    path: '/state/:deptId',
     component: () => import('@/view/visitor/state.vue'),
     meta: {
       title: '预约状态',
@@ -62,6 +62,31 @@ const routes = [
     component: () => import('@/view/visitor/result.vue'),
     meta: {
       title: '预约成功',
+    },
+  },
+  {
+    name: 'doorLogin',
+    path: '/door-login',
+    component: () => import('@/view/door/login.vue'),
+    meta: {
+      title: '门卫系统',
+    },
+  },
+  {
+    name: 'door',
+    path: '/door',
+    component: () => import('@/view/door/index.vue'),
+    meta: {
+      title: '扫码',
+    },
+  },
+
+  {
+    name: '404',
+    path: '/404',
+    component: () => import('@/view/404.vue'),
+    meta: {
+      title: '页面丢失了',
     },
   },
 ];

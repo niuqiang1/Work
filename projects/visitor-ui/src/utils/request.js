@@ -18,8 +18,10 @@ const http = axios.create({
 http.interceptors.request.use(
   (config) => {
     config.headers['Accept-Language'] = Cookies.get('language') || 'zh-CN';
-    config.headers['token'] = Cookies.get('token') || '';
+    config.headers['token'] = Cookies.get('tks') || '';
     // 默认参数
+    console.log(config);
+
     var defaults = {};
     // 防止缓存，GET请求默认带_t参数
     if (config.method === 'get') {
@@ -59,13 +61,15 @@ http.interceptors.request.use(
  */
 http.interceptors.response.use(
   (response) => {
-    console.log(response.data, 'ewe');
     if (response.data.code === 401 || response.data.code === 10001) {
       clearLoginInfo();
       showToast(response.data.msg);
       setTimeout((_) => {
         router.replace({ name: 'user' });
       }, 500);
+      return Promise.reject(response.data.msg);
+    } else if (response.data.code != 0) {
+      showToast(response.data.msg);
       return Promise.reject(response.data.msg);
     }
     return response;

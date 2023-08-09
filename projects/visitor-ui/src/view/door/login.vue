@@ -85,7 +85,7 @@ const onSubmit = (values) => {
     }
     Cookies.set('tks', res.data.token);
     router.push({
-      path: '/check/' + values.username,
+      path: '/door/',
     });
   });
 };

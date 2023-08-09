@@ -1,27 +1,39 @@
 <template>
   <div class="check-content" :class="{ showbg: backC == '#f8f8f8' }">
     <div class="user-info">
-      <van-image
-        round
-        width="70px"
-        height="70px"
-        :src="
-          userInfo.headUrl ||
-          'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg'
-        "
-      />
-      <div class="info">
-        <p class="title">{{ userInfo.realName }}</p>
-        <p class="mobile">{{ userInfo.username }}</p>
+      <div style="display: flex">
+        <van-image
+          round
+          width="70px"
+          height="70px"
+          :src="
+            userInfo.headUrl ||
+            'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg'
+          "
+        />
+        <div class="info">
+          <p class="title">{{ userInfo.realName }}</p>
+          <p class="mobile">{{ userInfo.username }}</p>
+        </div>
+      </div>
+      <div class="code">
+        <span>
+          联系码：<b>{{ userInfo.authCode }}</b>
+        </span>
       </div>
     </div>
+
     <div class="check-info">
       <van-tabs v-model:active="active" sticky border>
         <van-tab title="待审核">
-          <CheckList :checkType="0"></CheckList
+          <CheckList
+            :data-list="waitAuditList"
+            checkType="1"
+            @success="checkSuccess"
+          ></CheckList
         ></van-tab>
         <van-tab title="已审核">
-          <CheckList :checkType="1"></CheckList>
+          <CheckList checkType="2" :data-list="auditedList"></CheckList>
         </van-tab>
       </van-tabs>
     </div>
@@ -30,12 +42,13 @@
 <script setup>
 import { showToast } from 'vant';
 import CheckList from './checkList.vue';
-import { nextTick, reactive, ref } from 'vue';
+import { nextTick, reactive, ref, shallowRef } from 'vue';
 import { onMounted, unref } from 'vue';
 import http from '@/utils/request';
 import { useRoute } from 'vue-router';
+import { showSuccessToast } from 'vant';
 const route = useRoute();
-let userInfo = reactive({
+let userInfo = shallowRef({
   authCode: '',
   deptId: 0,
   email: '',
@@ -46,6 +59,8 @@ let userInfo = reactive({
   username: '',
 });
 
+let auditedList = ref();
+let waitAuditList = ref();
 const active = ref(0);
 const backC = ref('#f8f8f8');
 // const onClickTab = ({ title }) => showToast(title);
@@ -70,12 +85,24 @@ function getUserInfo() {
       if (data.code != 0) {
         return showToast(data.msg);
       }
-      userInfo.headUrl = data.data.headUrl;
-      userInfo.realName = data.data.realName;
-      userInfo.username = data.data.username;
-      console.log(userInfo);
+      userInfo.value = data.data;
+      getCheckList(userInfo.value.authCode);
     })
     .catch((_) => {});
+}
+
+function checkSuccess() {
+  console.log(3);
+  showSuccessToast({ message: '审核通过' });
+  getCheckList(userInfo.value.authCode);
+}
+
+function getCheckList(authCode) {
+  http.post('/visit/front/visitordetail/Tpage', { authCode }).then((res) => {
+    auditedList.value = res.data.data.auditedList || [];
+    waitAuditList.value = res.data.data.waitAuditList || [];
+    console.log(auditedList.value, waitAuditList.value, 'pp');
+  });
 }
 getUserInfo();
 
@@ -89,8 +116,12 @@ onMounted(() => {
 .user-info {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   :deep(.van-image) {
     border: 2px solid #fff !important;
+  }
+  .code {
+    color: #fff;
   }
   :deep() .van-tabs--line .van-tabs__wrap {
     border-radius: 5px !important;

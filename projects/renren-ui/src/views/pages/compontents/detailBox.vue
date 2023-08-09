@@ -3,12 +3,18 @@
     <vue-seamless-scroll :data="list" :classOption="classOption">
       <ul>
         <li v-for="(i, index) in list" :key="index" class="detail-item">
-          <el-avatar shape="square" :size="260" :fit="fit" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"></el-avatar>
+          <el-avatar shape="square" :size="260" fit="cover">
+            <img :src="i.headUrl" />
+          </el-avatar>
           <div class="box-content">
-            <p class="name textgreen">张三丰 <span>（184****3421）</span></p>
-            <p class="in-time">进校时间：2023-10-10 09:34</p>
-            <p class="cnt-person">审核人： <span class="text-green"> 章文</span></p>
-            <p class="cnt-time">审核时间：2023-10-10 09:34</p>
+            <p class="name textgreen">
+              {{ i.name }} <span>（{{ i.phone | plusXing(3, 4) }}）</span>
+            </p>
+            <p class="in-time">进校时间：{{ i.comeTime }}</p>
+            <p class="cnt-person">
+              审核人： <span class="text-green"> {{ i.authName }}</span>
+            </p>
+            <p class="cnt-time">审核时间：{{ i.auditTime }}</p>
           </div>
         </li>
       </ul>
@@ -32,6 +38,7 @@ export default {
     return {
       classOption: {
         step: 0.4,
+        limitMoveNum: 3,
       },
     };
   },

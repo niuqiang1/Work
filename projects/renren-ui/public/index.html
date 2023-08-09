@@ -31,9 +31,10 @@
     <!-- 开发环境 -->
     <% if (process.env.VUE_APP_NODE_ENV === 'dev') { %>
     <script>
-      // window.SITE_CONFIG["apiURL"] = "http://localhost:8080/renren-admin";
+      // window.SITE_CONFIG["apiURL"] = "https://6c6f-139-226-156-183.ngrok-free.app/renren-admin";
       // window.SITE_CONFIG["apiURL"] = "http://192.168.1.5:8080/renren-admin";
-      window.SITE_CONFIG["apiURL"] = "http://10.2.10.23:8080/renren-admin";
+      // window.SITE_CONFIG["apiURL"] = "http://10.2.10.23:8080/renren-admin";
+      window.SITE_CONFIG["apiURL"] = "http://localhost:8080/renren-admin";
     </script>
     <% } %>
     <!-- 集成测试环境 -->
@@ -52,7 +53,7 @@
     <!-- 生产环境 -->
     <% if (process.env.VUE_APP_NODE_ENV === 'prod') { %>
     <script>
-      window.SITE_CONFIG["apiURL"] = "http://localhost:8080/renren-admin";
+      window.SITE_CONFIG["apiURL"] = "/renren-admin";
     </script>
     <% } %>
   </head>

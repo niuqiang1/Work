@@ -4,8 +4,8 @@
     <van-form @submit="onSubmit">
       <van-cell-group inset>
         <van-field
-          v-model="formData.username"
-          name="username"
+          v-model="formData.phone"
+          name="phone"
           label="手机号"
           placeholder="手机号"
           :rules="[
@@ -17,8 +17,8 @@
           ]"
         />
         <van-field
-          v-model="formData.idno"
-          name="idno"
+          v-model="formData.idNo"
+          name="idNo"
           label="身份证"
           placeholder="身份证"
           :rules="[
@@ -44,22 +44,62 @@
 import Banner from '@/assets/banner.png';
 import { reactive, ref, unref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import http from '@/utils/request';
+import { showFailToast, showToast } from 'vant';
+import dayjs from 'dayjs';
+import { encrypt } from '@/utils/crypto';
+
 const router = useRouter();
 const route = useRoute();
+
+const showForm = ref(true);
+const deptId = route.params.deptId;
 const formData = reactive({
-  username: unref(route).query.username,
-  idno: unref(route).query.idno,
+  phone: unref(route).query.phone,
+  idNo: unref(route).query.idNo,
 });
 
-const onSubmit = (values) => {
-  router.push({
-    path: '/state',
-    query: { ...values },
+function onSubmit(values) {
+  console.log(values);
+  http({
+    url: 'visit/front/visitordetail/page',
+    method: 'get',
+    params: {
+      phone: values.phone,
+      idno: values.idNo,
+      deptId: deptId,
+      reqTime: dayjs().format('YYYY-MM-DD'),
+    },
+  }).then((res) => {
+    if (res.data.data && res.data.data.length > 0) {
+      const { status } = res.data.data[0];
+      console.log(status);
+
+      switch (status) {
+        case '0':
+          showToast('您的申请正在审核中，请稍后再试。');
+          break;
+        case '2':
+          showFailToast('您的申请被驳回，请联系审核人员！');
+          break;
+
+        default:
+          router.push({
+            path: '/state/' + deptId,
+            query: {
+              code: encrypt(JSON.stringify(res.data.data[0])),
+            },
+          });
+          break;
+      }
+    } else {
+      showFailToast('未查询到您' + dayjs().format('YYYY-MM-DD') + '的申请记录');
+    }
   });
-};
+}
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .user {
   &-poster {
     width: 100%;

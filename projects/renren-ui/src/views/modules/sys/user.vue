@@ -23,6 +23,12 @@
         <el-form-item>
           <el-button v-if="$hasPermission('sys:user:export')" type="info" @click="exportHandle()">{{ $t("export") }}</el-button>
         </el-form-item>
+        <el-form-item>
+          <el-upload :show-file-list="false" action="" :http-request="importHandle" v-if="$hasPermission('sys:user:export')">
+            <el-button type="primary">导入</el-button>
+          </el-upload>
+          <!-- <el-button v-if="$hasPermission('sys:user:export')" type="info" @click="importHandle()">导入</el-button> -->
+        </el-form-item>
       </el-form>
       <el-table v-loading="dataListLoading" :data="dataList" border @selection-change="dataListSelectionChangeHandle" @sort-change="dataListSortChangeHandle" style="width: 100%">
         <el-table-column type="selection" header-align="center" align="center" width="50"></el-table-column>
@@ -92,6 +98,19 @@ export default {
         gender: "",
       },
     };
+  },
+  methods: {
+    importHandle(file) {
+      let formDatas = new FormData();
+      formDatas.append("file", file.file);
+      this.$http
+        .post("/sys/user/upload", formDatas, {
+          "Content-Type": "multipart/form-data",
+        })
+        .then((res) => {
+          this.$message.success({ message: res.message });
+        });
+    },
   },
   components: {
     AddOrUpdate,

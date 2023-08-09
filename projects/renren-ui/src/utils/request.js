@@ -21,6 +21,7 @@ http.interceptors.request.use(
     // 默认参数
     var defaults = {};
     // 防止缓存，GET请求默认带_t参数
+
     if (config.method === "get") {
       config.params = {
         ...config.params,

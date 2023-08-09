@@ -19,6 +19,9 @@
       <el-form-item prop="gender" :label="$t('user.gender')">
         <ren-radio-group v-model="dataForm.gender" dict-type="gender"></ren-radio-group>
       </el-form-item>
+      <el-form-item prop="idNo" :label="$t('user.idNo')">
+        <el-input v-model="dataForm.idNo" :placeholder="$t('user.idNo')"></el-input>
+      </el-form-item>
       <el-form-item prop="email" :label="$t('user.email')">
         <el-input v-model="dataForm.email" :placeholder="$t('user.email')"></el-input>
       </el-form-item>
@@ -221,7 +224,11 @@ export default {
 
     successHandle(res, file) {
       console.log(res, "res");
-      this.dataForm.headUrl = URL.createObjectURL(file.raw);
+      if (res.code == 0) {
+        this.dataForm.headUrl = res.data;
+      } else {
+        this.$message.error(res.msg);
+      }
     },
     beforeUploadHandle(file) {
       console.log(file.type);

@@ -24,8 +24,8 @@
           ]"
         />
         <van-field
-          v-model="formData.idno"
-          name="idno"
+          v-model="formData.idNo"
+          name="idNo"
           label="身份证"
           placeholder="身份证"
           :rules="[
@@ -86,21 +86,26 @@
           show-word-limit
         />
         <van-field
+          v-model="formData.reqTime"
+          readonly
           label="预约日期"
           name="reqTime"
-          is-link
-          readonly
-          v-model="formData.reqTime"
-          @click="showDate = true"
-          :rules="[{ required: true, message: '请选择预约日期' }]"
         />
-        <van-calendar v-model:show="showDate" @confirm="onDateConfirm" />
+        <!-- <van-field
+         label="预约日期"
+           name="reqTime"
+         is-link
+           readonly
+           v-model="formData.reqTime"
+           @click="showDate = true"
+           :rules="[{ required: true, message: '请选择预约日期' }]"
+         />
+        <van-calendar v-model:show="showDate" @confirm="onDateConfirm" /> -->
       </van-cell-group>
       <div style="margin: 16px">
         <van-button round block type="primary" native-type="submit">
           提交
         </van-button>
-        <van-button round block @click="www"> 提交 </van-button>
       </div>
     </van-form>
   </div>
@@ -112,39 +117,36 @@ import { UploaderFileListItem, showToast, showDialog } from 'vant';
 import http from '@/utils/request';
 
 import { reactive, ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import dayjs from 'dayjs';
 const formData = reactive({
   authCode: '',
   carNo: '',
   cause: '',
   headUrl: '',
-  idno: '',
+  idNo: '',
   name: '',
   phone: '',
-  reqTime: '',
+  reqTime: dayjs().format('YYYY-MM-DD'),
+
   headUrlList: [],
 });
 const showPicker = ref(false);
 const showDate = ref(false);
 const router = useRouter();
-const columns = [
-  { text: '杭州', value: 'Hangzhou' },
-  { text: '宁波', value: 'Ningbo' },
-  { text: '温州', value: 'Wenzhou' },
-  { text: '绍兴', value: 'Shaoxing' },
-  { text: '湖州', value: 'Huzhou' },
-];
 
+const route = useRoute();
+const deptId = route.params.deptId;
 // const onConfirm = ({ selectedOptions }) => {
 //   showPicker.value = false;
 //   formData.contactPerson = selectedOptions[0].text;
 // };
 
-const formatDate = (date) =>
-  `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+// const formatDate = (date) =>
+//   `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const onDateConfirm = (value) => {
   showDate.value = false;
-  formData.reqTime = formatDate(value);
+  formData.reqTime = dayjs(value).format('YYYYMMDD');
 };
 
 const headUrl = computed(() => {
@@ -160,7 +162,7 @@ const afterRead = (file) => {
   const form = new FormData();
   form.append('file', file.file);
   http
-    .post('visit/visitordetail/upload', form)
+    .post('visit/front/visitordetail/upload', form)
     .then(({ data }) => {
       console.log(data, 'pp');
       if (data.code != 0) {
@@ -174,10 +176,11 @@ const afterRead = (file) => {
 const onSubmit = (values) => {
   console.log('submit', values, headUrl.value);
   http
-    .post('visit/visitordetail', {
+    .post('visit/front/visitordetail/save', {
       ...values,
       headUrl: headUrl.value,
-      reqTime: new Date(values.reqTime),
+      reqTime: dayjs(values.reqTime).format('YYYYMMDD'),
+      deptId: deptId,
     })
     .then(({ data }) => {
       if (data.code != 0) {
@@ -194,8 +197,8 @@ const onSubmit = (values) => {
         router.push({
           name: 'visitor-search',
           query: {
-            username: values.username,
-            idno: values.idno,
+            phone: values.phone,
+            idNo: values.idNo,
           },
         });
         // on close
@@ -203,27 +206,9 @@ const onSubmit = (values) => {
     })
     .catch((_) => {});
 };
-
-const www = () => {
-  showDialog({
-    title: '提示',
-    message: '预约信息已提交，请注意审核结果，可通过首页->已有预约，前往查看',
-    theme: 'round-button',
-    confirmButtonText: '前往查看',
-  }).then(() => {
-    router.push({
-      name: 'visitor-search',
-      query: {
-        username: 1212,
-        idno: 1212,
-      },
-    });
-    // on close
-  });
-};
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .user {
   &-poster {
     width: 100%;
